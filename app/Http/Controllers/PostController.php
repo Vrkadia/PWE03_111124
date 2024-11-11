@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Post;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class PostController extends Controller
 {
@@ -57,7 +58,9 @@ class PostController extends Controller
      */
     public function edit(string $id)
     {
-        //
+        return view('post.edit', [
+                'post' => Post::find($id)
+        ]);
     }
 
     /**
@@ -65,7 +68,23 @@ class PostController extends Controller
      */
     public function update(Request $request, string $id)
     {
-        //
+        $request->validate([
+            'title' => ['required'],
+            'image' => ['required', 'image'],
+            'body' => ['required', 'min:5'],
+        ]);
+        $post = Post::find($id);
+        $image = $post->image;
+        if ($request->hasFile('image')) {
+            Storage::delete($image);
+            $image = $request->file('image')->store('post/image/');
+        }
+        $post->update([
+            'title' => $request->title,
+            'image' => $image,
+            'body' => $request->body,
+        ]);
+        return redirect()->route('post.index');
     }
 
     /**
