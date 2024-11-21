@@ -30,6 +30,14 @@
                         </div>
 
                         <div class="mb-2">
+                            <x-input-label for="title">Document</x-input-label>
+                            <input type="file" name="document" accept=".pdf" class="w-full form-input rounded-md shadow-sm @error('document') border border-red-500 @enderror">
+                            @error('document')
+                            <span class="text-red-500">{{ $message }}</span>
+                            @enderror
+                        </div>
+
+                        <div class="mb-2">
                             <x-input-label for="body">Body</x-input-label>
                             <textarea name="body" id="body" rows="4" class="form-input rounded-md shadow-sm w-full @error('body') border border-red-500 @enderror" placeholder="enter blog body">
                                 {{ old('body') ?? $post->body }}

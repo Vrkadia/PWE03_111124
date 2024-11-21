@@ -7,10 +7,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+Route::get('/dashboard', [PostController::class, 'viewDashboard'])->middleware(['auth', 'verified'])->name('dashboard');
+Route::get('/posts/{id}', [PostController::class, 'show'])->name('post.show');
 
-Route::get('/dashboard', function () {
-    return view('dashboard');
-})->middleware(['auth', 'verified'])->name('dashboard');
+
+Route::get('/profile', [ProfileController::class, 'edit']);
 
 Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');

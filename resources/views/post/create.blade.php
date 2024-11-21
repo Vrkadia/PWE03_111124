@@ -29,6 +29,14 @@
                             <span class="text-red-500">{{ $message }}</span>
                             @enderror
                         </div>
+                        <div class="mb-4">
+                            <x-input-label for="document" :value="__('Document (PDF)')" />
+                            <input type="file" name="document" id="document" accept=".pdf"
+                                   class="w-full form-input rounded-md shadow-sm @error('document') border border-red-500 @enderror">
+                            @error('document')
+                            <span class="text-red-500">{{ $message }}</span>
+                            @enderror
+                        </div>
 
                         <div class="mb-4">
                             <x-input-label for="body" :value="__('Body')" />

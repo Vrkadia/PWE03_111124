@@ -17,6 +17,20 @@ class PostController extends Controller
             'posts' => Post::where('user_id', auth()->id())->get(),
         ]);
     }
+    public function viewDashboard(){
+        return view('dashboard', [
+            'posts' => Post::all(),
+        ]);
+    }
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function show(string $id)
+    {
+        return view('post.detailCard', [
+            'post' => Post::findOrFail($id)
+        ]);
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -33,29 +47,28 @@ class PostController extends Controller
     {
         $request->validate([
             'title' => ['required'],
-            'image' => ['required', 'image'],
+            'image' => ['nullable', 'image'],
+            'document' => ['required', 'mimes:pdf', 'max:2048'],
             'body' => ['required', 'min:5'],
         ]);
+
+        $imagePath = null;
+        if ($request->hasFile('image')) {
+            $imagePath = $request->file('image')->store('post/image/');
+        }
+
         Post::create([
             'user_id' => auth()->id(),
             'title' => $request->title,
-            'image' => $request->file('image')->store('post/image/'),
+            'image' => $imagePath,
+            'document' => $request->file('document')->store('post/document/'),
             'body' => $request->body,
         ]);
         return redirect()->route('post.index');
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
+
     public function edit(string $id)
     {
         return view('post.edit', [
@@ -70,20 +83,27 @@ class PostController extends Controller
     {
         $request->validate([
             'title' => ['required'],
-            'image' => ['required', 'image'],
+            'image' => ['nullable', 'image'],
+            'document' => ['nullable', 'mimes:pdf', 'max:2048'],
             'body' => ['required', 'min:5'],
         ]);
         $post = Post::find($id);
-        $image = $post->image;
+
         if ($request->hasFile('image')) {
-            Storage::delete($image);
-            $image = $request->file('image')->store('post/image/');
+            Storage::delete($post->image);
+            $post->image = $request->file('image')->store('post/image/');
         }
-        $post->update([
-            'title' => $request->title,
-            'image' => $image,
-            'body' => $request->body,
-        ]);
+
+        if ($request->hasFile('document')) {
+            Storage::delete($post->document);
+            $post->document = $request->file('document')->store('post/document/');
+        }
+
+        $post->title = $request->title;
+        $post->body = $request->body;
+
+        $post->save();
+
         return redirect()->route('post.index');
     }
 
@@ -92,7 +112,18 @@ class PostController extends Controller
      */
     public function destroy(string $id)
     {
-        Post::find($id)->delete();
+        $post = Post::find($id);
+
+        if ($post->image) {
+            Storage::delete($post->image);
+        }
+
+        if ($post->document) {
+            Storage::delete($post->document);
+        }
+
+        $post->delete();
+
         return redirect()->route('post.index');
     }
 }
